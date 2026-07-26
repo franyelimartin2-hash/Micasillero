@@ -8,16 +8,24 @@ st.set_page_config(
     page_title="Mi Control de Paquetes", page_icon="📦", layout="centered"
 )
 
-# Inyectar un poco de CSS para hacer los botones más compactos y estéticos
+# Estilo CSS para forzar los botones en línea horizontal y hacerlos compactos
 st.markdown(
     """
     <style>
-    /* Hace que los botones sean más compactos y alineados */
+    /* Agrupa los botones horizontalmente y reduce su tamaño */
+    div.row-widget.stHorizontal {
+        display: flex;
+        gap: 8px;
+    }
+    div.row-widget.stHorizontal > div {
+        flex: 1;
+    }
     div.stButton > button {
-        padding: 4px 10px;
-        font-size: 13px;
+        padding: 4px 8px;
+        font-size: 12px;
         border-radius: 6px;
         width: 100%;
+        min-height: 32px;
     }
     </style>
     """,
@@ -49,8 +57,7 @@ def guardar_datos(df_guardar):
 
 # Título principal
 st.markdown(
-    "<h2 style='text-align: center; color: #fff;'>📦 MI CONTROL DE"
-    " PAQUETES</h2>",
+    "<h2 style='text-align: center; color: #fff;'>PAQUETES</h2>",
     unsafe_allow_html=True,
 )
 
@@ -104,7 +111,7 @@ with tab1:
 
 
 # ---------------------------------------------------------
-# FUNCION PARA MOSTRAR TU CUADRITO ORIGINAL + BOTONES LADOS A LADO
+# FUNCION PARA MOSTRAR DATOS + BOTONES LADO A LADO
 # ---------------------------------------------------------
 def mostrar_pestana(estado_filtro):
   df_actual = cargar_datos()
@@ -126,16 +133,15 @@ def mostrar_pestana(estado_filtro):
     return
 
   for index, row in filtrados.iterrows():
-    # Tu formato original de tarjeta completa
     with st.container():
+      # Tu formato de texto original intacto
       st.markdown(
           f"""
             📌 **Tracking:** {row['tracking']}  \n📝 **Descripción:** {row['descripcion']}  \n💰 **Monto:** ${row['monto']} | 📅 **Fecha:** {row['fecha']}
             """,
       )
-      st.markdown("---")
 
-      # Botones pequeños y estrictamente uno al lado del otro
+      # Botones estrictamente uno al lado del otro
       col1, col2 = st.columns(2)
 
       if estado_filtro == "En Espera":
@@ -182,7 +188,8 @@ def mostrar_pestana(estado_filtro):
             st.rerun()
 
       st.markdown(
-          "<div style='margin-bottom: 25px;'></div>", unsafe_allow_html=True
+          "<hr style='margin: 10px 0; border-color: #333;'>",
+          unsafe_allow_html=True,
       )
 
 
