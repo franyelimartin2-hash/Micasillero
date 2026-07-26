@@ -8,31 +8,6 @@ st.set_page_config(
     page_title="Mi Control de Paquetes", page_icon="📦", layout="centered"
 )
 
-# CSS para forzar los botones lado a lado incluso en pantallas pequeñas de teléfonos
-st.markdown(
-    """
-    <style>
-    .botones-horizontal {
-        display: flex;
-        gap: 8px;
-        width: 100%;
-        margin-top: 5px;
-        margin-bottom: 10px;
-    }
-    .botones-horizontal > div {
-        flex: 1;
-    }
-    .botones-horizontal button {
-        width: 100% !important;
-        padding: 4px 8px !important;
-        font-size: 13px !important;
-        border-radius: 6px !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
 EXCEL_FILE = "mis_paquetes_simple.csv"
 
 
@@ -112,7 +87,7 @@ with tab1:
 
 
 # ---------------------------------------------------------
-# FUNCION PARA MOSTRAR DATOS + BOTONES FORZADOS LADO A LADO
+# FUNCION PARA MOSTRAR DATOS + BOTONES LADO A LADO REALES
 # ---------------------------------------------------------
 def mostrar_pestana(estado_filtro):
   df_actual = cargar_datos()
@@ -135,63 +110,75 @@ def mostrar_pestana(estado_filtro):
 
   for index, row in filtrados.iterrows():
     with st.container():
-      # Texto original intacto
+      # Texto original intacto del cuadrito
       st.markdown(
           f"""
             📌 **Tracking:** {row['tracking']}  \n📝 **Descripción:** {row['descripcion']}  \n💰 **Monto:** ${row['monto']} | 📅 **Fecha:** {row['fecha']}
             """,
       )
 
-      # Contenedor HTML para forzar los botones en la misma línea horizontal en móviles
-      st.markdown('<div class="botones-horizontal">', unsafe_allow_html=True)
+      # Usamos columnas nativas pero compactas y limpias con un truco de diseño
       col1, col2 = st.columns(2)
 
       if estado_filtro == "En Espera":
         with col1:
-          if st.button("🏢 Al casillero", key=f"c1_{index}"):
+          if st.button(
+              "🏢 Casillero", key=f"c1_{index}", use_container_width=True
+          ):
             df_actual.at[index, "estado"] = "En Casillero"
             guardar_datos(df_actual)
             st.rerun()
         with col2:
-          if st.button("🗑️ Eliminar", key=f"del_{index}"):
+          if st.button(
+              "🗑️ Eliminar", key=f"del_{index}", use_container_width=True
+          ):
             df_actual = df_actual.drop(index)
             guardar_datos(df_actual)
             st.rerun()
 
       elif estado_filtro == "En Casillero":
         with col1:
-          if st.button("🔄 Devolver", key=f"c2_{index}"):
+          if st.button(
+              "🔄 Devolver", key=f"c2_{index}", use_container_width=True
+          ):
             df_actual.at[index, "estado"] = "En Espera"
             guardar_datos(df_actual)
             st.rerun()
         with col2:
-          if st.button("🚢 En Camino", key=f"c3_{index}"):
+          if st.button(
+              "🚢 Camino", key=f"c3_{index}", use_container_width=True
+          ):
             df_actual.at[index, "estado"] = "En Camino"
             guardar_datos(df_actual)
             st.rerun()
 
       elif estado_filtro == "En Camino":
         with col1:
-          if st.button("🔄 Devolver", key=f"c4_{index}"):
+          if st.button(
+              "🔄 Devolver", key=f"c4_{index}", use_container_width=True
+          ):
             df_actual.at[index, "estado"] = "En Casillero"
             guardar_datos(df_actual)
             st.rerun()
         with col2:
-          if st.button("✅ En Mis Manos", key=f"c5_{index}"):
+          if st.button(
+              "✅ Entregado", key=f"c5_{index}", use_container_width=True
+          ):
             df_actual.at[index, "estado"] = "Entregados"
             guardar_datos(df_actual)
             st.rerun()
 
       elif estado_filtro == "Entregados":
         with col1:
-          if st.button("🗑️ Eliminar", key=f"del2_{index}"):
+          if st.button(
+              "🗑️ Eliminar", key=f"del2_{index}", use_container_width=True
+          ):
             df_actual = df_actual.drop(index)
             guardar_datos(df_actual)
             st.rerun()
 
-      st.markdown("</div>", unsafe_allow_html=True)
       st.markdown(
-          "<hr style='margin: 10px 0; border-color: #333;'>",
+          "<hr style='margin: 12px 0; border-color: #333;'>",
           unsafe_allow_html=True,
       )
 
