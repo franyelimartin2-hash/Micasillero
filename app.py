@@ -38,7 +38,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Pestañas originales de navegación arriba
+# Pestañas de navegación arriba
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "➕ Registrar",
     "⏳ En Espera",
@@ -88,7 +88,7 @@ with tab1:
 
 
 # ---------------------------------------------------------
-# FUNCION PARA MOSTRAR TARJETAS LIMPIAS (SIN FOTOS NI RAYAS)
+# FUNCION PARA MOSTRAR TARJETAS COMPACTAS (BOTONES EN LÍNEA)
 # ---------------------------------------------------------
 def mostrar_pestana(estado_filtro):
   df_actual = cargar_datos()
@@ -110,63 +110,67 @@ def mostrar_pestana(estado_filtro):
     return
 
   for index, row in filtrados.iterrows():
-    # Tarjeta limpia sin líneas divisorias internas
     with st.container():
+      # Tarjeta unificada donde los datos y botones viven juntos y compactos
       st.markdown(
           f"""
-            <div style="background-color: #1e1e1e; padding: 10px 14px; border-radius: 6px; margin-bottom: 8px;">
-                📌 <b>Tracking:</b> {row['tracking']} | 📝 <b>Desc:</b> {row['descripcion']}<br>
+            <div style="background-color: #1e1e1e; padding: 12px; border-radius: 8px; margin-bottom: 6px; border: 1px solid #333;">
+                📌 <b>Trk:</b> {row['tracking']} | 📝 <b>Desc:</b> {row['descripcion']}<br>
                 💰 <b>Monto:</b> ${row['monto']} | 📅 <b>Fecha:</b> {row['fecha']}
             </div>
             """,
           unsafe_allow_html=True,
       )
 
-      # Botones de acción ordenados horizontalmente
+      # Botones estrictamente horizontal (lado a lado) y compactos
       col1, col2 = st.columns(2)
 
       if estado_filtro == "En Espera":
         with col1:
-          if st.button("🏢 Al casillero", key=f"c1_{index}"):
+          if st.button("🏢 Al casillero", key=f"c1_{index}", use_container_width=True):
             df_actual.at[index, "estado"] = "En Casillero"
             guardar_datos(df_actual)
             st.rerun()
         with col2:
-          if st.button("🗑️ Eliminar", key=f"del_{index}"):
+          if st.button("🗑️ Eliminar", key=f"del_{index}", use_container_width=True):
             df_actual = df_actual.drop(index)
             guardar_datos(df_actual)
             st.rerun()
 
       elif estado_filtro == "En Casillero":
         with col1:
-          if st.button("🔄 Devolver", key=f"c2_{index}"):
+          if st.button("🔄 Devolver", key=f"c2_{index}", use_container_width=True):
             df_actual.at[index, "estado"] = "En Espera"
             guardar_datos(df_actual)
             st.rerun()
         with col2:
-          if st.button("🚢 En Camino", key=f"c3_{index}"):
+          if st.button("🚢 En Camino", key=f"c3_{index}", use_container_width=True):
             df_actual.at[index, "estado"] = "En Camino"
             guardar_datos(df_actual)
             st.rerun()
 
       elif estado_filtro == "En Camino":
         with col1:
-          if st.button("🔄 Devolver", key=f"c4_{index}"):
+          if st.button("🔄 Devolver", key=f"c4_{index}", use_container_width=True):
             df_actual.at[index, "estado"] = "En Casillero"
             guardar_datos(df_actual)
             st.rerun()
         with col2:
-          if st.button("✅ En Mis Manos", key=f"c5_{index}"):
+          if st.button("✅ En Mis Manos", key=f"c5_{index}", use_container_width=True):
             df_actual.at[index, "estado"] = "Entregados"
             guardar_datos(df_actual)
             st.rerun()
 
       elif estado_filtro == "Entregados":
         with col1:
-          if st.button("🗑️ Eliminar", key=f"del2_{index}"):
+          if st.button("🗑️ Eliminar", key=f"del2_{index}", use_container_width=True):
             df_actual = df_actual.drop(index)
             guardar_datos(df_actual)
             st.rerun()
+
+      st.markdown(
+          "<div style='margin-bottom: 15px;'></div>", unsafe_allow_html=True
+      )
 
 
 # ---------------------------------------------------------
