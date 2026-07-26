@@ -8,24 +8,25 @@ st.set_page_config(
     page_title="Mi Control de Paquetes", page_icon="📦", layout="centered"
 )
 
-# Estilo CSS para forzar los botones en línea horizontal y hacerlos compactos
+# CSS para forzar los botones lado a lado incluso en pantallas pequeñas de teléfonos
 st.markdown(
     """
     <style>
-    /* Agrupa los botones horizontalmente y reduce su tamaño */
-    div.row-widget.stHorizontal {
+    .botones-horizontal {
         display: flex;
         gap: 8px;
+        width: 100%;
+        margin-top: 5px;
+        margin-bottom: 10px;
     }
-    div.row-widget.stHorizontal > div {
+    .botones-horizontal > div {
         flex: 1;
     }
-    div.stButton > button {
-        padding: 4px 8px;
-        font-size: 12px;
-        border-radius: 6px;
-        width: 100%;
-        min-height: 32px;
+    .botones-horizontal button {
+        width: 100% !important;
+        padding: 4px 8px !important;
+        font-size: 13px !important;
+        border-radius: 6px !important;
     }
     </style>
     """,
@@ -111,7 +112,7 @@ with tab1:
 
 
 # ---------------------------------------------------------
-# FUNCION PARA MOSTRAR DATOS + BOTONES LADO A LADO
+# FUNCION PARA MOSTRAR DATOS + BOTONES FORZADOS LADO A LADO
 # ---------------------------------------------------------
 def mostrar_pestana(estado_filtro):
   df_actual = cargar_datos()
@@ -134,14 +135,15 @@ def mostrar_pestana(estado_filtro):
 
   for index, row in filtrados.iterrows():
     with st.container():
-      # Tu formato de texto original intacto
+      # Texto original intacto
       st.markdown(
           f"""
             📌 **Tracking:** {row['tracking']}  \n📝 **Descripción:** {row['descripcion']}  \n💰 **Monto:** ${row['monto']} | 📅 **Fecha:** {row['fecha']}
             """,
       )
 
-      # Botones estrictamente uno al lado del otro
+      # Contenedor HTML para forzar los botones en la misma línea horizontal en móviles
+      st.markdown('<div class="botones-horizontal">', unsafe_allow_html=True)
       col1, col2 = st.columns(2)
 
       if estado_filtro == "En Espera":
@@ -187,6 +189,7 @@ def mostrar_pestana(estado_filtro):
             guardar_datos(df_actual)
             st.rerun()
 
+      st.markdown("</div>", unsafe_allow_html=True)
       st.markdown(
           "<hr style='margin: 10px 0; border-color: #333;'>",
           unsafe_allow_html=True,
