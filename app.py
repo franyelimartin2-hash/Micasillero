@@ -27,161 +27,163 @@ def cargar_datos():
 
 
 # Guardar datos
-def guardar_datos(df):
-  df.to_csv(EXCEL_FILE, index=False)
+def guardar_datos(df_guardar):
+  df_guardar.to_csv(EXCEL_FILE, index=False)
 
 
-df = cargar_datos()
-
-# Título principal limpio
+# Título principal
 st.markdown(
-    "<h3 style='text-align: center; color: #fff; margin-bottom: 20px;'>📦 MI"
-    " CONTROL DE PAQUETES</h3>",
+    "<h2 style='text-align: center; color: #fff;'>📦 MI CONTROL DE"
+    " PAQUETES</h2>",
     unsafe_allow_html=True,
 )
 
-# Menú de navegación horizontal compacto
-menu = [
+# Pestañas originales de navegación arriba
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "➕ Registrar",
-    "⏳ Espera",
-    "🏢 Casillero",
-    "🚢 Camino",
+    "⏳ En Espera",
+    "🏢 En Casillero",
+    "🚢 En Camino",
     "✅ Entregados",
 ]
-choice = st.selectbox(
-    "Sección:", menu, label_visibility="collapsed"
 )
 
 
 # ---------------------------------------------------------
 # 1. REGISTRAR ORDEN
 # ---------------------------------------------------------
-if choice == "➕ Registrar":
-  st.subheader("Registrar Nueva Orden")
+with tab1:
+  st.subheader("Registrar Nueva Orden (1688)")
 
   with st.form("form_registro", clear_on_submit=True):
-    tracking = st.text_input("Número de Tracking *")
+    tracking = st.text_input("Número de Tracking / Guía de 1688 *")
     descripcion = st.text_input(
-        "Descripción *", placeholder="Ej: Ropa, accesorios..."
+        "Descripción de lo que viene *",
+        placeholder="Ej: Ropa deportiva, accesorios, etc.",
     )
-    monto = st.text_input("Monto ($)", placeholder="Ej: 9 o 15.50")
+    monto = st.text_input("Monto Pagado ($)", placeholder="Ej: 9 o 15.50")
 
     enviar = st.form_submit_button("Guardar Orden")
 
     if enviar:
       if not tracking or not descripcion:
-        st.warning("Completa el Tracking y la Descripción.")
+        st.warning(
+            "Por favor, completa al menos el Tracking y la Descripción."
+        )
       else:
+        df_actual = cargar_datos()
         nueva_fila = pd.DataFrame({
             "tracking": [tracking.strip()],
             "descripcion": [descripcion.strip()],
             "monto": [monto.strip()],
             "fecha": [datetime.now().strftime("%d/%m/%Y")],
-            "estado": ["Espera"],
+            "estado": ["En Espera"],
         })
 
-        df = pd.concat([df, nueva_fila], ignore_index=True)
-        guardar_datos(df)
-        st.success("¡Guardado con éxito!")
+        df_actual = pd.concat([df_actual, nueva_fila], ignore_index=True)
+        guardar_datos(df_actual)
+        st.success(
+            "¡Orden registrada con éxito! Ya aparecerá en 'En Espera'."
+        )
 
 
 # ---------------------------------------------------------
-# FUNCION PARA MOSTRAR TARJETAS COMPACTAS
+# FUNCION PARA MOSTRAR TARJETAS LIMPIAS (SIN FOTOS NI RAYAS)
 # ---------------------------------------------------------
-def mostrar_paquetes(estado_filtro):
+def mostrar_pestana(estado_filtro):
+  df_actual = cargar_datos()
+
   busqueda = st.text_input(
       "🔍 Buscar tracking...", key=f"search_{estado_filtro}"
   )
 
-  filtrados = df[df["estado"] == estado_filtro]
+  filtrados = df_actual[df_actual["estado"] == estado_filtro]
   if busqueda:
     filtrados = filtrados[
         filtrados["tracking"].str.contains(busqueda, case=False, na=False)
     ]
 
-  st.caption(f"Total: {len(filtrados)}")
+  st.write(f"**Total:** {len(filtrados)}")
 
   if filtrados.empty:
-    st.info("No hay paquetes aquí.")
+    st.info("No hay paquetes en esta sección.")
     return
 
   for index, row in filtrados.iterrows():
-    # Contenedor con diseño de tarjeta elegante y sin líneas feas
+    # Tarjeta limpia sin líneas divisorias internas
     with st.container():
       st.markdown(
           f"""
-            <div style="background-color: #1e1e1e; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #333;">
-                <span style="font-size: 14px; color: #bbb;"><b>Trk:</b> {row['tracking']}</span> | 
-                <span style="font-size: 14px; color: #fff;"><b>Desc:</b> {row['descripcion']}</span><br>
-                <span style="font-size: 13px; color: #2ecc71;"><b>Monto:</b> ${row['monto']}</span> 
-                <span style="font-size: 12px; color: #888; float: right;">{row['fecha']}</span>
+            <div style="background-color: #1e1e1e; padding: 10px 14px; border-radius: 6px; margin-bottom: 8px;">
+                📌 <b>Tracking:</b> {row['tracking']} | 📝 <b>Desc:</b> {row['descripcion']}<br>
+                💰 <b>Monto:</b> ${row['monto']} | 📅 <b>Fecha:</b> {row['fecha']}
             </div>
             """,
           unsafe_allow_html=True,
       )
 
-      # Botones pequeños distribuidos horizontalmente según el estado
-      cols = st.columns(2)
+      # Botones de acción ordenados horizontalmente
+      col1, col2 = st.columns(2)
 
-      if estado_filtro == "Espera":
-        with cols[0]:
-          if st.button("🏢 Al Casillero", key=f"c1_{index}"):
-            df.at[index, "estado"] = "Casillero"
-            guardar_datos(df)
+      if estado_filtro == "En Espera":
+        with col1:
+          if st.button("🏢 Al casillero", key=f"c1_{index}"):
+            df_actual.at[index, "estado"] = "En Casillero"
+            guardar_datos(df_actual)
             st.rerun()
-        with cols[1]:
-          if st.button("🗑️ Borrar", key=f"del_{index}"):
-            df = df.drop(index)
-            guardar_datos(df)
+        with col2:
+          if st.button("🗑️ Eliminar", key=f"del_{index}"):
+            df_actual = df_actual.drop(index)
+            guardar_datos(df_actual)
             st.rerun()
 
-      elif estado_filtro == "Casillero":
-        with cols[0]:
-          if st.button("↩️ Volver", key=f"c2_{index}"):
-            df.at[index, "estado"] = "Espera"
-            guardar_datos(df)
+      elif estado_filtro == "En Casillero":
+        with col1:
+          if st.button("🔄 Devolver", key=f"c2_{index}"):
+            df_actual.at[index, "estado"] = "En Espera"
+            guardar_datos(df_actual)
             st.rerun()
-        with cols[1]:
+        with col2:
           if st.button("🚢 En Camino", key=f"c3_{index}"):
-            df.at[index, "estado"] = "Camino"
-            guardar_datos(df)
+            df_actual.at[index, "estado"] = "En Camino"
+            guardar_datos(df_actual)
             st.rerun()
 
-      elif estado_filtro == "Camino":
-        with cols[0]:
-          if st.button("↩️ Volver", key=f"c4_{index}"):
-            df.at[index, "estado"] = "Casillero"
-            guardar_datos(df)
+      elif estado_filtro == "En Camino":
+        with col1:
+          if st.button("🔄 Devolver", key=f"c4_{index}"):
+            df_actual.at[index, "estado"] = "En Casillero"
+            guardar_datos(df_actual)
             st.rerun()
-        with cols[1]:
+        with col2:
           if st.button("✅ En Mis Manos", key=f"c5_{index}"):
-            df.at[index, "estado"] = "Entregados"
-            guardar_datos(df)
+            df_actual.at[index, "estado"] = "Entregados"
+            guardar_datos(df_actual)
             st.rerun()
 
       elif estado_filtro == "Entregados":
-        with cols[0]:
-          if st.button("🗑️ Borrar", key=f"del2_{index}"):
-            df = df.drop(index)
-            guardar_datos(df)
+        with col1:
+          if st.button("🗑️ Eliminar", key=f"del2_{index}"):
+            df_actual = df_actual.drop(index)
+            guardar_datos(df_actual)
             st.rerun()
 
 
 # ---------------------------------------------------------
-# 2. VISTAS DE ESTADOS
+# 2. VISTAS EN PESTAÑAS
 # ---------------------------------------------------------
-if choice == "⏳ Espera":
-  st.subheader("En Espera")
-  mostrar_paquetes("Espera")
+with tab2:
+  st.subheader("Paquetes En Espera")
+  mostrar_pestana("En Espera")
 
-elif choice == "🏢 Casillero":
-  st.subheader("En Casillero")
-  mostrar_paquetes("Casillero")
+with tab3:
+  st.subheader("Paquetes En Casillero")
+  mostrar_pestana("En Casillero")
 
-elif choice == "🚢 Camino":
-  st.subheader("En Camino")
-  mostrar_paquetes("Camino")
+with tab4:
+  st.subheader("Paquetes En Camino")
+  mostrar_pestana("En Camino")
 
-elif choice == "✅ Entregados":
-  st.subheader("En Mis Manos")
-  mostrar_paquetes("Entregados")
+with tab5:
+  st.subheader("Paquetes Entregados")
+  mostrar_pestana("Entregados")
