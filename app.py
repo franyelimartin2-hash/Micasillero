@@ -12,7 +12,6 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    /* Fuerza a que cualquier par de columnas en Streamlit se mantenga horizontal en móviles */
     [data-testid="stHorizontalBlock"] {
         display: flex !important;
         flex-direction: row !important;
@@ -22,7 +21,6 @@ st.markdown(
         flex: 1 !important;
         min-width: unset !important;
     }
-    /* Botones más compactos y limpios */
     .stButton > button {
         width: 100% !important;
         padding: 4px 6px !important;
@@ -63,14 +61,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Pestañas originales de navegación arriba
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "➕ Registrar",
-    "⏳ En Espera",
-    "🏢 En Casillero",
-    "🚢 En Camino",
-    "✅ Entregados",
-]
+# Pestañas originales de navegación arriba (4 pestañas originales)
+tab1, tab2, tab3, tab4 = st.tabs(
+    ["➕ Registrar", "⏳ En Espera", "🏢 En Casillero", "🚢 En Camino"]
 )
 
 
@@ -113,7 +106,7 @@ with tab1:
 
 
 # ---------------------------------------------------------
-# FUNCION PARA MOSTRAR TARJETAS Y BOTONES LADO A LADO REALES
+# FUNCION PARA MOSTRAR TARJETAS Y BOTONES
 # ---------------------------------------------------------
 def mostrar_pestana(estado_filtro):
   df_actual = cargar_datos()
@@ -146,7 +139,7 @@ def mostrar_pestana(estado_filtro):
           unsafe_allow_html=True,
       )
 
-      # Botones de acción estrictamente uno al lado del otro sin expandirse
+      # Botones de acción uno al lado del otro
       col1, col2 = st.columns(2)
 
       if estado_filtro == "En Espera":
@@ -180,14 +173,8 @@ def mostrar_pestana(estado_filtro):
             guardar_datos(df_actual)
             st.rerun()
         with col2:
+          # Al darle aquí, se elimina directamente de la lista tal como lo tenías al inicio
           if st.button("✅ En Mis Manos", key=f"c5_{index}"):
-            df_actual.at[index, "estado"] = "Entregados"
-            guardar_datos(df_actual)
-            st.rerun()
-
-      elif estado_filtro == "Entregados":
-        with col1:
-          if st.button("🗑️ Eliminar", key=f"del2_{index}"):
             df_actual = df_actual.drop(index)
             guardar_datos(df_actual)
             st.rerun()
@@ -207,7 +194,3 @@ with tab3:
 with tab4:
   st.subheader("Paquetes En Camino")
   mostrar_pestana("En Camino")
-
-with tab5:
-  st.subheader("Paquetes Entregados")
-  mostrar_pestana("Entregados")
