@@ -1,0 +1,5 @@
+id,tracking,descripcion,monto,estado,fecha_registro,imagen_path,foto_compra,foto_casillero
+20260726160336,445544,ropa,2.0,Recibido,26/07/2026,,,
+20260726161223,7878,medias,8.0,Finalizado,26/07/2026,,fotos_casillero\compra_7878_20260726161223.jpg,fotos_casillero\casillero_7878_20260726161223.jpg
+20260726162229,78562,gu,12,Finalizado,26/07/2026,,fotos_casillero\compra_78562_20260726162229.jpg,
+20260726171155,789,can,45.5,En Casillero,26/07/2026,,,
