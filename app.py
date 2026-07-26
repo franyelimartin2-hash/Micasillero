@@ -8,6 +8,31 @@ st.set_page_config(
     page_title="Mi Control de Paquetes", page_icon="📦", layout="centered"
 )
 
+# Estilo CSS para forzar que las columnas de botones se queden de lado a lado en celulares
+st.markdown(
+    """
+    <style>
+    /* Fuerza a que cualquier par de columnas en Streamlit se mantenga horizontal en móviles */
+    [data-testid="stHorizontalBlock"] {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 10px !important;
+    }
+    [data-testid="stHorizontalBlock"] > div {
+        flex: 1 !important;
+        min-width: unset !important;
+    }
+    /* Botones más compactos y limpios */
+    .stButton > button {
+        width: 100% !important;
+        padding: 4px 6px !important;
+        font-size: 13px !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 EXCEL_FILE = "mis_paquetes_simple.csv"
 
 
@@ -88,7 +113,7 @@ with tab1:
 
 
 # ---------------------------------------------------------
-# FUNCION PARA MOSTRAR TARJETAS LIMPIAS Y BOTONES LADO A LADO
+# FUNCION PARA MOSTRAR TARJETAS Y BOTONES LADO A LADO REALES
 # ---------------------------------------------------------
 def mostrar_pestana(estado_filtro):
   df_actual = cargar_datos()
@@ -110,11 +135,10 @@ def mostrar_pestana(estado_filtro):
     return
 
   for index, row in filtrados.iterrows():
-    # Tarjeta limpia sin líneas divisorias internas
     with st.container():
       st.markdown(
           f"""
-            <div style="background-color: #1e1e1e; padding: 10px 14px; border-radius: 6px; margin-bottom: 8px;">
+            <div style="background-color: #1e1e1e; padding: 10px 14px; border-radius: 6px; margin-bottom: 6px;">
                 📌 <b>Tracking:</b> {row['tracking']} | 📝 <b>Desc:</b> {row['descripcion']}<br>
                 💰 <b>Monto:</b> ${row['monto']} | 📅 <b>Fecha:</b> {row['fecha']}
             </div>
@@ -122,62 +146,48 @@ def mostrar_pestana(estado_filtro):
           unsafe_allow_html=True,
       )
 
-      # Botones de acción ordenados horizontalmente con ancho ajustado
+      # Botones de acción estrictamente uno al lado del otro sin expandirse
       col1, col2 = st.columns(2)
 
       if estado_filtro == "En Espera":
         with col1:
-          if st.button(
-              "🏢 Al casillero", key=f"c1_{index}", use_container_width=True
-          ):
+          if st.button("🏢 Al casillero", key=f"c1_{index}"):
             df_actual.at[index, "estado"] = "En Casillero"
             guardar_datos(df_actual)
             st.rerun()
         with col2:
-          if st.button(
-              "🗑️ Eliminar", key=f"del_{index}", use_container_width=True
-          ):
+          if st.button("🗑️ Eliminar", key=f"del_{index}"):
             df_actual = df_actual.drop(index)
             guardar_datos(df_actual)
             st.rerun()
 
       elif estado_filtro == "En Casillero":
         with col1:
-          if st.button(
-              "🔄 Devolver", key=f"c2_{index}", use_container_width=True
-          ):
+          if st.button("🔄 Devolver", key=f"c2_{index}"):
             df_actual.at[index, "estado"] = "En Espera"
             guardar_datos(df_actual)
             st.rerun()
         with col2:
-          if st.button(
-              "🚢 En Camino", key=f"c3_{index}", use_container_width=True
-          ):
+          if st.button("🚢 En Camino", key=f"c3_{index}"):
             df_actual.at[index, "estado"] = "En Camino"
             guardar_datos(df_actual)
             st.rerun()
 
       elif estado_filtro == "En Camino":
         with col1:
-          if st.button(
-              "🔄 Devolver", key=f"c4_{index}", use_container_width=True
-          ):
+          if st.button("🔄 Devolver", key=f"c4_{index}"):
             df_actual.at[index, "estado"] = "En Casillero"
             guardar_datos(df_actual)
             st.rerun()
         with col2:
-          if st.button(
-              "✅ En Mis Manos", key=f"c5_{index}", use_container_width=True
-          ):
+          if st.button("✅ En Mis Manos", key=f"c5_{index}"):
             df_actual.at[index, "estado"] = "Entregados"
             guardar_datos(df_actual)
             st.rerun()
 
       elif estado_filtro == "Entregados":
         with col1:
-          if st.button(
-              "🗑️ Eliminar", key=f"del2_{index}", use_container_width=True
-          ):
+          if st.button("🗑️ Eliminar", key=f"del2_{index}"):
             df_actual = df_actual.drop(index)
             guardar_datos(df_actual)
             st.rerun()
