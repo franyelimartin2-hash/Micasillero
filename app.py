@@ -54,6 +54,10 @@ def guardar_datos(df_guardar):
   df_guardar.to_csv(EXCEL_FILE, index=False)
 
 
+# Inicializar variable de estado para los mensajes de éxito
+if "mensaje_exito" not in st.session_state:
+  st.session_state.mensaje_exito = ""
+
 # Título principal
 st.markdown(
     "<h2 style='text-align: center; color: #fff;'>📦 MI CONTROL DE"
@@ -73,6 +77,11 @@ tab1, tab2, tab3, tab4 = st.tabs(
 with tab1:
   st.subheader("Registrar Nueva Orden (1688)")
 
+  # Mostrar el mensaje de éxito guardado en la sesión (si existe) y luego limpiarlo
+  if st.session_state.mensaje_exito:
+    st.success(st.session_state.mensaje_exito)
+    st.session_state.mensaje_exito = ""
+
   with st.form("form_registro", clear_on_submit=True):
     tracking = st.text_input("Número de Tracking / Guía de 1688 *")
     descripcion = st.text_input(
@@ -90,19 +99,42 @@ with tab1:
         )
       else:
         df_actual = cargar_datos()
-        nueva_fila = pd.DataFrame({
-            "tracking": [tracking.strip()],
-            "descripcion": [descripcion.strip()],
-            "monto": [monto.strip()],
-            "fecha": [datetime.now().strftime("%d/%m/%Y")],
-            "estado": ["En Espera"],
-        })
 
-        df_actual = pd.concat([df_actual, nueva_fila], ignore_index=True)
-        guardar_datos(df_actual)
-        st.success(
-            "¡Orden registrada con éxito! Ya aparecerá en 'En Espera'."
-        )
+        # Validar si el tracking ya existe (ignorando espacios y mayúsculas/minúsculas)
+        tracking_limpio = tracking.strip().lower()
+        existente = False
+        if not df_actual.empty:
+          existente = (
+              df_actual["tracking"]
+              .astype(str)
+              .str.strip()
+              .str.lower()
+              .isin([tracking_limpio])
+              .any()
+          )
+
+        if existente:
+          st.error(
+              "⚠️ ¡Este número de tracking ya fue registrado! Por favor,"
+              " verifícalo."
+          )
+        else:
+          nueva_fila = pd.DataFrame({
+              "tracking": [tracking.strip()],
+              "descripcion": [descripcion.strip()],
+              "monto": [monto.strip()],
+              "fecha": [datetime.now().strftime("%d/%m/%Y")],
+              "estado": ["En Espera"],
+          })
+
+          df_actual = pd.concat([df_actual, nueva_fila], ignore_index=True)
+          guardar_datos(df_actual)
+
+          # Guardar en el estado para que aparezca limpio y no persista al volver
+          st.session_state.mensaje_exito = (
+              "¡Orden registrada con éxito! Ya aparecerá en 'En Espera'."
+          )
+          st.rerun()
 
 
 # ---------------------------------------------------------
@@ -173,7 +205,6 @@ def mostrar_pestana(estado_filtro):
             guardar_datos(df_actual)
             st.rerun()
         with col2:
-          # Al darle aquí, se elimina directamente de la lista tal como lo tenías al inicio
           if st.button("✅ En Mis Manos", key=f"c5_{index}"):
             df_actual = df_actual.drop(index)
             guardar_datos(df_actual)
